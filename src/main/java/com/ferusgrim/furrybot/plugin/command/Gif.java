@@ -2,12 +2,10 @@ package com.ferusgrim.furrybot.plugin.command;
 
 import com.ferusgrim.furrybot.FurryBot;
 import com.ferusgrim.furrybot.util.DiscordUtil;
-import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.sun.deploy.util.StringUtils;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IUser;
 
@@ -102,7 +100,7 @@ public class Gif extends FurryCommand {
     }
 
     public URL convertArgs(final String[] args) {
-        final String url = API_STR + "gif%20" + StringUtils.join(Lists.newArrayList(Arrays.asList(args)), "%20");
+        final String url = API_STR + "gif%20" + String.join("%20", Arrays.asList(args));
         try {
             return new URL(url);
         } catch (final MalformedURLException e) {
