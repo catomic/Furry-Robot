@@ -1,6 +1,7 @@
 package com.ferusgrim.furrybot.plugin;
 
 import com.ferusgrim.furrybot.FurryBot;
+import com.ferusgrim.furrybot.plugin.command.ChangeAvatar;
 import com.ferusgrim.furrybot.plugin.command.FurryCommand;
 import com.ferusgrim.furrybot.plugin.command.Gif;
 import com.ferusgrim.furrybot.plugin.command.Pong;
@@ -40,6 +41,8 @@ public class CommandRouter extends FurryBotPlugin {
             cmd = new Pong(this.getBot(), author, channel, content);
         } else if (command.equalsIgnoreCase("gif")) {
             cmd = new Gif(this.getBot(), author, channel, content);
+        } else if (command.equalsIgnoreCase("avatar")) {
+            cmd = new ChangeAvatar(this.getBot(), author, channel, content);
         }
 
         if (cmd == null) {

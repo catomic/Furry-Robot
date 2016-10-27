@@ -51,6 +51,11 @@ public class Gif extends FurryCommand {
             return;
         }
 
+        if (this.getArgs().length == 0) {
+            DiscordUtil.sendMessage(this.getChannel(), "That's kind of vague, don't you think?");
+            return;
+        }
+
         final URL url = this.convertArgs(this.getArgs());
 
         if (url == null) {
