@@ -3,6 +3,7 @@ package com.ferusgrim.furrybot.plugin.command;
 import com.ferusgrim.furrybot.FurryBot;
 import com.ferusgrim.furrybot.util.DiscordUtil;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.Image;
@@ -10,8 +11,8 @@ import sx.blah.discord.util.RateLimitException;
 
 public class ChangeAvatar extends FurryCommand {
 
-    public ChangeAvatar(final FurryBot bot, final IUser user, final IChannel channel, final String[] args) {
-        super(bot, user, channel, args);
+    public ChangeAvatar(final FurryBot bot, final IUser user, final IChannel channel, final IMessage message, final String[] args) {
+        super(bot, user, channel, message, args);
     }
 
     @Override

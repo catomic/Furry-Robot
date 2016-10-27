@@ -17,6 +17,9 @@ public class FurConf {
     private final List<String> leaveMessage;
     private final String commandPrefix;
     private final List<String> imageWhitelist;
+    private final List<String> bouncerIds;
+    private final List<String> rolesToBeAddedWhenBounced;
+    private final List<String> ageGatedRoles;
 
     private FurConf(final String token,
                     final List<String> sorters,
@@ -25,7 +28,10 @@ public class FurConf {
                     final List<String> greetMessage,
                     final List<String> leaveMessage,
                     final String commandPrefix,
-                    final List<String> imageWhitelist) {
+                    final List<String> imageWhitelist,
+                    final List<String> bouncerIds,
+                    final List<String> rolesToBeAddedWhenBounced,
+                    final List<String> ageGatedRoles) {
         this.token = token;
         this.sorters = sorters;
         this.rulesChannel = rulesChannel;
@@ -34,6 +40,9 @@ public class FurConf {
         this.leaveMessage = leaveMessage;
         this.commandPrefix = commandPrefix;
         this.imageWhitelist = imageWhitelist;
+        this.bouncerIds = bouncerIds;
+        this.rolesToBeAddedWhenBounced = rolesToBeAddedWhenBounced;
+        this.ageGatedRoles = ageGatedRoles;
     }
 
     public String getToken() {
@@ -68,6 +77,18 @@ public class FurConf {
         return this.imageWhitelist;
     }
 
+    public List<String> getBouncerIds() {
+        return this.bouncerIds;
+    }
+
+    public List<String> getRolesToBeAddedWhenBounced() {
+        return this.rolesToBeAddedWhenBounced;
+    }
+
+    public List<String> getAgeGatedRoles() {
+        return this.ageGatedRoles;
+    }
+
     public static FurConf of(final ConfigurationNode node) throws ConfigurationException {
         final String token = node.getNode("authentication", "token").getString("");
         final List<String> sorters = getList(node, "sorters");
@@ -77,6 +98,9 @@ public class FurConf {
         final List<String> leaveMessage = getList(node, "leave-message");
         final String commandPrefix = node.getNode("command-prefix").getString("");
         final List<String> imageWhitelist = getList(node, "image-channel-whitelist");
+        final List<String> bouncerIds = getList(node, "bouncer-roles");
+        final List<String> rolesToAddWhenBounced = getList(node, "roles-to-add-when-bounced");
+        final List<String> ageGatedRoles = getList(node, "age-gated-roles");
 
         if (token.isEmpty()) {
             throw new ConfigurationException("Token was blank!");
@@ -106,7 +130,16 @@ public class FurConf {
             throw new ConfigurationException("No command prefix specified!");
         }
 
-        return new FurConf(token, sorters, rulesChannel, greetChannel, greetMessage, leaveMessage, commandPrefix, imageWhitelist);
+        if (bouncerIds.isEmpty()) {
+            throw new ConfigurationException("No bouncer roles specified!");
+        }
+
+        if (rolesToAddWhenBounced.isEmpty()) {
+            throw new ConfigurationException("Didn't add any roles to be added when bounced!");
+        }
+
+        return new FurConf(token, sorters, rulesChannel, greetChannel, greetMessage, leaveMessage,
+                commandPrefix, imageWhitelist, bouncerIds, rolesToAddWhenBounced, ageGatedRoles);
     }
 
     private static List<String> getList(final ConfigurationNode node, final String... path) {

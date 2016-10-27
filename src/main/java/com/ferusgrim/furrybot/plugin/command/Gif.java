@@ -8,6 +8,7 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;
 
 import java.io.BufferedReader;
@@ -39,8 +40,8 @@ public class Gif extends FurryCommand {
         }
     }
 
-    public Gif(final FurryBot bot, final IUser user, final IChannel channel, final String[] args) {
-        super(bot, user, channel, args);
+    public Gif(final FurryBot bot, final IUser user, final IChannel channel, final IMessage message, final String[] args) {
+        super(bot, user, channel, message, args);
     }
 
     @Override
