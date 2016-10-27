@@ -1,15 +1,18 @@
 package com.ferusgrim.furrybot.plugin.command;
 
+import com.ferusgrim.furrybot.FurryBot;
+import com.ferusgrim.furrybot.plugin.FurryBotPlugin;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IUser;
 
-public abstract class FurryCommand {
+public abstract class FurryCommand extends FurryBotPlugin {
 
     private final IUser user;
     private final IChannel channel;
     private final String[] args;
 
-    public FurryCommand(final IUser user, final IChannel channel, final String[] args) {
+    public FurryCommand(final FurryBot bot, final IUser user, final IChannel channel, final String[] args) {
+        super(bot);
         this.user = user;
         this.channel = channel;
         this.args = args;

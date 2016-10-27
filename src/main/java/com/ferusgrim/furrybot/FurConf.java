@@ -16,6 +16,7 @@ public class FurConf {
     private final List<String> greetMessage;
     private final List<String> leaveMessage;
     private final String commandPrefix;
+    private final List<String> imageWhitelist;
 
     private FurConf(final String token,
                     final List<String> sorters,
@@ -23,7 +24,8 @@ public class FurConf {
                     final String greetChannel,
                     final List<String> greetMessage,
                     final List<String> leaveMessage,
-                    final String commandPrefix) {
+                    final String commandPrefix,
+                    final List<String> imageWhitelist) {
         this.token = token;
         this.sorters = sorters;
         this.rulesChannel = rulesChannel;
@@ -31,6 +33,7 @@ public class FurConf {
         this.greetMessage = greetMessage;
         this.leaveMessage = leaveMessage;
         this.commandPrefix = commandPrefix;
+        this.imageWhitelist = imageWhitelist;
     }
 
     public String getToken() {
@@ -61,6 +64,10 @@ public class FurConf {
         return this.commandPrefix;
     }
 
+    public List<String> getImageWhitelist() {
+        return this.imageWhitelist;
+    }
+
     public static FurConf of(final ConfigurationNode node) throws ConfigurationException {
         final String token = node.getNode("authentication", "token").getString("");
         final List<String> sorters = getList(node, "sorters");
@@ -69,6 +76,7 @@ public class FurConf {
         final List<String> greetMessage = getList(node, "greet-message");
         final List<String> leaveMessage = getList(node, "leave-message");
         final String commandPrefix = node.getNode("command-prefix").getString("");
+        final List<String> imageWhitelist = getList(node, "image-channel-whitelist");
 
         if (token.isEmpty()) {
             throw new ConfigurationException("Token was blank!");
@@ -98,7 +106,7 @@ public class FurConf {
             throw new ConfigurationException("No command prefix specified!");
         }
 
-        return new FurConf(token, sorters, rulesChannel, greetChannel, greetMessage, leaveMessage, commandPrefix);
+        return new FurConf(token, sorters, rulesChannel, greetChannel, greetMessage, leaveMessage, commandPrefix, imageWhitelist);
     }
 
     private static List<String> getList(final ConfigurationNode node, final String... path) {

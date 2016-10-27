@@ -37,9 +37,9 @@ public class CommandRouter extends FurryBotPlugin {
 
         FurryCommand cmd = null;
         if (command.equalsIgnoreCase("ping")) {
-            cmd = new Pong(author, channel, content);
+            cmd = new Pong(this.getBot(), author, channel, content);
         } else if (command.equalsIgnoreCase("gif")) {
-            cmd = new Gif(author, channel, content);
+            cmd = new Gif(this.getBot(), author, channel, content);
         }
 
         if (cmd == null) {

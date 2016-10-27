@@ -4,6 +4,7 @@ import com.ferusgrim.furrybot.FurryBot;
 import com.ferusgrim.furrybot.util.DiscordUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import sx.blah.discord.handle.obj.IChannel;
@@ -20,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.List;
 
 public class Gif extends FurryCommand {
 
@@ -37,12 +39,18 @@ public class Gif extends FurryCommand {
         }
     }
 
-    public Gif(final IUser user, final IChannel channel, final String[] args) {
-        super(user, channel, args);
+    public Gif(final FurryBot bot, final IUser user, final IChannel channel, final String[] args) {
+        super(bot, user, channel, args);
     }
 
     @Override
     public void execute() {
+        if (!this.getBot().getConfig().getImageWhitelist().isEmpty()
+                && !this.getBot().getConfig().getImageWhitelist().contains(this.getChannel().getID())) {
+            DiscordUtil.sendMessage(this.getChannel(), "Please limit your search to these channels: " + this.mergeChannelIDs());
+            return;
+        }
+
         final URL url = this.convertArgs(this.getArgs());
 
         if (url == null) {
@@ -74,6 +82,11 @@ public class Gif extends FurryCommand {
 
         final JsonArray items = new JsonParser().parse(builder.toString()).getAsJsonObject().getAsJsonArray("items");
 
+        if (items == null) {
+            DiscordUtil.sendMessage(this.getChannel(), "No results found!");
+            return;
+        }
+
         JsonObject json = null;
         for (final JsonElement item : items) {
             final String link = item.getAsJsonObject().getAsJsonPrimitive("link").getAsString();
@@ -97,6 +110,25 @@ public class Gif extends FurryCommand {
 
         DiscordUtil.sendMessage(this.getChannel(), this.getUser().mention(true) + " Here's your image!: " + link
                 + "\n[" + width + "x" + height + " : " + (size < 1 ? 0 : "") + decFormat.format(size) + "MB]");
+    }
+
+    private String mergeChannelIDs() {
+        final List<String> whitelist = this.getBot().getConfig().getImageWhitelist();
+
+        final StringBuilder builder = new StringBuilder();
+
+        for (String id : whitelist) {
+            final IChannel channel = this.getChannel().getGuild().getChannelByID(id);
+
+            if (channel == null) {
+                continue;
+            }
+
+            builder.append(" ");
+            builder.append(channel.mention());
+        }
+
+        return builder.toString();
     }
 
     public URL convertArgs(final String[] args) {
