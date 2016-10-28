@@ -41,7 +41,7 @@ public class FurryBot {
             return;
         }
 
-        LOGGER.info("Launching bot with TOKEN: {}", config);
+        LOGGER.info("Launching bot with TOKEN: {}", token);
         this.client = this.getClient(token, true);
 
         final Greeter greeter = Greeter.configure(config.getNode("welcome"));
