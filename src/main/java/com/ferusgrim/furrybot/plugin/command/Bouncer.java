@@ -3,6 +3,7 @@ package com.ferusgrim.furrybot.plugin.command;
 import com.ferusgrim.furrybot.util.DiscordUtil;
 import com.ferusgrim.furrybot.util.DiscordUtil.Mention;
 import com.ferusgrim.furrybot.util.ParseUtil;
+import com.google.common.collect.Lists;
 import ninja.leaping.configurate.ConfigurationNode;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
@@ -70,6 +71,7 @@ public class Bouncer extends FurryCommand {
         final List<IRole> normal = DiscordUtil.getRoles(channel.getGuild(), this.normalRoles);
         final List<IRole> age = DiscordUtil.getRoles(channel.getGuild(), this.ageGateRoles);
 
+        List<IUser> mentioned = Lists.newArrayList();
         for (final String str : args) {
             final Mention mention = DiscordUtil.getMention(str);
 
@@ -78,26 +80,52 @@ public class Bouncer extends FurryCommand {
                 continue;
             }
 
-            IUser mentioned = DiscordUtil.getUser(channel.getGuild(), mention.getId());
+            mentioned.add(DiscordUtil.getUser(channel.getGuild(), mention.getId()));
+        }
+
+        if (mentioned.isEmpty()) {
+            return "You didn't mention a user that I could fine!";
+        }
+
+        for (final IUser iUser : mentioned) {
+
             for (final IRole role : normal) {
                 try {
-                    mentioned.addRole(role);
+                    iUser.addRole(role);
                 } catch (DiscordException | RateLimitException | MissingPermissionsException e) {
-                    DiscordUtil.sendMessage(channel, "Failed to add role: " + role.getName());
+                    DiscordUtil.sendMessage(channel, "Failed to add role \"" + role.getName()
+                            + "\" to " + iUser.getName() + "! :/");
                 }
             }
 
             if (ofAge) {
                 for (final IRole role : age) {
                     try {
-                        mentioned.addRole(role);
+                        iUser.addRole(role);
                     } catch (DiscordException | RateLimitException | MissingPermissionsException e) {
-                        DiscordUtil.sendMessage(channel, "Failed to add role: " + role.getName());
+                        DiscordUtil.sendMessage(channel, "Failed to add role \"" + role.getName()
+                                + "\" to " + iUser.getName() + "! :/");
                     }
                 }
             }
         }
 
-        return "Done! :D";
+        return this.getSuccessString(mentioned);
+    }
+
+    private String getSuccessString(final List<IUser> mentioned) {
+        final StringBuilder builder = new StringBuilder();
+        String sep = "";
+
+        builder.append("Done!: ");
+        builder.append("[");
+        for (final IUser user : mentioned) {
+            builder.append(sep);
+            sep = ", ";
+            builder.append(user.getName());
+        }
+        builder.append("]");
+
+        return builder.toString();
     }
 }
