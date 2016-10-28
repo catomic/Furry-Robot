@@ -26,7 +26,7 @@ public class HelpMe extends FurryCommand {
 
     @Override
     public String getSyntax() {
-        return "help [verbose]";
+        return "help [command]";
     }
 
     @Override
