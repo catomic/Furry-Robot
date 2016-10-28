@@ -110,9 +110,8 @@ public class Gif extends FurryCommand {
             while ((line = reader.readLine()) != null) {
                 builder.append(line);
             }
-        } catch (final IOException e) {
-            FurryBot.LOGGER.error("Failed read JSON from URL: {}", url, e);
-            return "Looks like I messed up reading the JSON response somehow!";
+        } catch (final IOException ignored) {
+            return "We reached our limit, sorry! Try again, later. :)";
         }
 
         final JsonArray items = new JsonParser().parse(builder.toString()).getAsJsonObject().getAsJsonArray("items");
