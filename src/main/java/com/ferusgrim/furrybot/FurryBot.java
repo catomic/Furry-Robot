@@ -1,6 +1,6 @@
 package com.ferusgrim.furrybot;
 
-import com.ferusgrim.furrybot.plugin.CommandRouter;
+import com.ferusgrim.furrybot.plugin.command.CommandManager;
 import com.ferusgrim.furrybot.plugin.Greeter;
 import com.ferusgrim.furrybot.plugin.Leaver;
 import com.ferusgrim.furrybot.util.ConfigFile;
@@ -20,34 +20,43 @@ public class FurryBot {
 
     public static final Logger LOGGER;
     public static final Path PROGRAM_DIR;
-    public static final ConfigFile CONFIG_FILE;
 
     static {
         LoggerSetup.setup();
         LOGGER = LoggerFactory.getLogger(FurryBot.class);
         PROGRAM_DIR = Paths.get("");
-        CONFIG_FILE = ConfigUtil.ofResource(PROGRAM_DIR.resolve("config.conf").toAbsolutePath(), "/config.conf", true);
     }
 
-    private final FurConf config;
     private final IDiscordClient client;
 
     private FurryBot() throws ConfigurationException, DiscordException {
         LOGGER.info("Logging to: {}", LoggerSetup.LOG_LOCATION);
         LOGGER.info("Launched in directory: {}", PROGRAM_DIR.toAbsolutePath().toString());
 
-        this.config = FurConf.of(CONFIG_FILE.getNode());
+        final ConfigFile config = ConfigUtil.ofResource(PROGRAM_DIR.resolve("config.conf").toAbsolutePath(), "/config.conf", true);
+        final String token = config.getNode("authentication", "token").getString("");
+        if (token.isEmpty()) {
+            LOGGER.error("Cannot ignore field \"authentication.token\"");
+            this.client = null;
+            return;
+        }
 
-        LOGGER.info("Launching bot with TOKEN: {}", this.config.getToken());
-        this.client = this.getClient(this.config.getToken(), true);
+        LOGGER.info("Launching bot with TOKEN: {}", config);
+        this.client = this.getClient(token, true);
 
-        this.client.getDispatcher().registerListener(new Greeter(this));
-        this.client.getDispatcher().registerListener(new Leaver(this));
-        this.client.getDispatcher().registerListener(new CommandRouter(this));
-    }
+        final Greeter greeter = Greeter.configure(config.getNode("welcome"));
+        if (greeter != null) {
+            this.client.getDispatcher().registerListener(greeter);
+        }
 
-    public FurConf getConfig() {
-        return this.config;
+        final Leaver leaver = Leaver.configure(config.getNode("leaving"));
+        if (leaver != null) {
+            this.client.getDispatcher().registerListener(leaver);
+        }
+
+        final CommandManager commandManager = new CommandManager(this.client, config.getNode("commands"));
+        commandManager.registerCommands();
+        this.client.getDispatcher().registerListener(commandManager);
     }
 
     public IDiscordClient getClient() {

@@ -1,41 +1,61 @@
 package com.ferusgrim.furrybot.plugin.command;
 
-import com.ferusgrim.furrybot.FurryBot;
-import com.ferusgrim.furrybot.plugin.FurryBotPlugin;
+import com.ferusgrim.furrybot.util.ParseUtil;
+import com.google.common.collect.Lists;
+import ninja.leaping.configurate.ConfigurationNode;
+import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;
 
-public abstract class FurryCommand extends FurryBotPlugin {
+import java.util.List;
 
-    private final IUser user;
-    private final IChannel channel;
-    private final IMessage message;
-    private final String[] args;
+public abstract class FurryCommand {
 
-    public FurryCommand(final FurryBot bot, final IUser user, final IChannel channel, final IMessage message, final String[] args) {
-        super(bot);
-        this.user = user;
-        this.channel = channel;
-        this.message = message;
-        this.args = args;
+    private final CommandManager manager;
+    private final IDiscordClient bot;
+    private final ConfigurationNode rawConfig;
+
+    public FurryCommand(final CommandManager manager,
+                        final IDiscordClient bot,
+                        final ConfigurationNode rawConfig) {
+        this.manager = manager;
+        this.bot = bot;
+        this.rawConfig = rawConfig;
     }
 
-    public IUser getUser() {
-        return this.user;
+    public boolean isActive() {
+        return this.rawConfig.getNode("use").getBoolean(false);
     }
 
-    public IChannel getChannel() {
-        return this.channel;
+    public List<String> isAllowedInChannel(final IChannel channel) {
+        return Lists.newArrayList();
     }
 
-    public IMessage getMessage() {
-        return this.message;
+    public CommandManager getManager() {
+        return this.manager;
     }
 
-    public String[] getArgs() {
-        return this.args;
+    public IDiscordClient getBot() {
+        return this.bot;
     }
 
-    public abstract void execute();
+    public ConfigurationNode getRawConfig() {
+        return this.rawConfig;
+    }
+
+    public int getRequiredArguments() {
+        return 0;
+    }
+
+    public List<String> getRequiredRoles() {
+        return ParseUtil.getList(this.getRawConfig().getNode("role-permissions"));
+    }
+
+    public abstract String getName();
+
+    public abstract String getDescription();
+
+    public abstract String getSyntax();
+
+    public abstract String execute(final IChannel channel, final IUser user, final String[] args);
 }

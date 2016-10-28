@@ -1,11 +1,11 @@
 package com.ferusgrim.furrybot.plugin.command;
 
-import com.ferusgrim.furrybot.FurryBot;
 import com.ferusgrim.furrybot.util.DiscordUtil;
-import com.google.common.collect.Lists;
-import sx.blah.discord.handle.impl.obj.User;
+import com.ferusgrim.furrybot.util.DiscordUtil.Mention;
+import com.ferusgrim.furrybot.util.ParseUtil;
+import ninja.leaping.configurate.ConfigurationNode;
+import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.DiscordException;
@@ -13,73 +13,91 @@ import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RateLimitException;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static com.ferusgrim.furrybot.util.DiscordUtil.Mention.Type.USER;
+import static com.ferusgrim.furrybot.util.DiscordUtil.Mention.Type.USER_NICKNAME;
 
 public class Bouncer extends FurryCommand {
 
-    public Bouncer(final FurryBot bot, final IUser user, final IChannel channel, final IMessage message, final String[] args) {
-        super(bot, user, channel, message, args);
+    private final List<String> normalRoles;
+    private final List<String> ageGateRoles;
+
+    public Bouncer(final CommandManager manager,
+                   final IDiscordClient bot,
+                   final ConfigurationNode rawConfig) {
+        super(manager, bot, rawConfig);
+
+        this.normalRoles = ParseUtil.getList(rawConfig.getNode("add-roles"));
+        this.ageGateRoles = ParseUtil.getList(rawConfig.getNode("add-roles-18"));
     }
 
     @Override
-    public void execute() {
-        boolean allow = false;
-        for (final IRole role : this.getUser().getRolesForGuild(this.getChannel().getGuild())) {
-            if (this.getBot().getConfig().getBouncerIds().contains(role.getID())) {
-                allow = true;
-                break;
-            }
-        }
+    public int getRequiredArguments() {
+        return 1;
+    }
 
-        if (!allow) {
-            DiscordUtil.sendMessage(this.getChannel(), this.getUser().mention(true) + "How about no?");
-            return;
-        }
+    @Override
+    public String getName() {
+        return "bounce";
+    }
 
-        if (this.getArgs().length < 1) {
-            DiscordUtil.sendMessage(this.getChannel(), this.getUser().mention(true) + " If you're not more specific, I'm ganna bounce YOU.");
-            return;
-        }
+    @Override
+    public String getDescription() {
+        return "Sorts members into their roles.";
+    }
 
+    @Override
+    public String getSyntax() {
+        return "bounce [18+] <@user> [@user ... ]";
+    }
+
+    @Override
+    public String execute(final IChannel channel, final IUser user, String[] args) {
         final boolean ofAge;
-        if (this.getArgs()[0].equalsIgnoreCase("18+")) {
+        if (args[0].equalsIgnoreCase("18+")) {
             ofAge = true;
+            args = ParseUtil.removeFirstElement(args);
         } else {
             ofAge = false;
         }
 
-        if (this.getMessage().getMentions().size() == 0) {
-            DiscordUtil.sendMessage(this.getChannel(), this.getUser().mention(true) + " You forget to mention people!");
-            return;
+        if (args.length < 1) {
+            return ":interrobang: Whoops! Let's try that again?: `"
+                    + this.getManager().getRawConfig().getNode("prefix").getString("")
+                    + this.getSyntax() + "`";
         }
 
-        final List<IRole> rolesToAdd = Lists.newArrayList();
-        rolesToAdd.addAll(this.getChannel().getGuild().getRoles().stream()
-                .filter(role -> this.getBot().getConfig().getRolesToBeAddedWhenBounced().contains(role.getID()))
-                .collect(Collectors.toList()));
+        final List<IRole> normal = DiscordUtil.getRoles(channel.getGuild(), this.normalRoles);
+        final List<IRole> age = DiscordUtil.getRoles(channel.getGuild(), this.ageGateRoles);
 
-        if (ofAge) {
-            rolesToAdd.addAll(this.getChannel().getGuild().getRoles().stream()
-                    .filter(role -> this.getBot().getConfig().getAgeGatedRoles().contains(role.getID()))
-                    .collect(Collectors.toList()));
-        }
+        for (final String str : args) {
+            final Mention mention = DiscordUtil.getMention(str);
 
-        if (rolesToAdd.isEmpty()) {
-            DiscordUtil.sendMessage(this.getChannel(), "This bot isn't setup to add roles when bounced!");
-            return;
-        }
+            if (mention == null
+                    || mention.getType() != USER_NICKNAME && mention.getType() != USER) {
+                continue;
+            }
 
-        for (final IUser user : this.getMessage().getMentions()) {
-            for (final IRole role : rolesToAdd) {
+            IUser mentioned = DiscordUtil.getUser(channel.getGuild(), mention.getId());
+            for (final IRole role : normal) {
                 try {
-                    user.addRole(role);
-                } catch (final MissingPermissionsException | RateLimitException | DiscordException e) {
-                    DiscordUtil.sendMessage(this.getChannel(), "Whoops, I hit an error!");
-                    FurryBot.LOGGER.error("Hit exception while adding role to user: u={} r={}", user.getID(), role.getID(), e);
+                    mentioned.addRole(role);
+                } catch (DiscordException | RateLimitException | MissingPermissionsException e) {
+                    DiscordUtil.sendMessage(channel, "Failed to add role: " + role.getName());
+                }
+            }
+
+            if (ofAge) {
+                for (final IRole role : age) {
+                    try {
+                        mentioned.addRole(role);
+                    } catch (DiscordException | RateLimitException | MissingPermissionsException e) {
+                        DiscordUtil.sendMessage(channel, "Failed to add role: " + role.getName());
+                    }
                 }
             }
         }
 
-        DiscordUtil.sendMessage(this.getChannel(), this.getUser().mention(true) + " Done!");
+        return "Done! :D";
     }
 }
