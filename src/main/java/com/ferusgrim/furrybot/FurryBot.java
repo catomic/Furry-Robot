@@ -1,5 +1,6 @@
 package com.ferusgrim.furrybot;
 
+import com.ferusgrim.furrybot.plugin.HereAttacker;
 import com.ferusgrim.furrybot.plugin.command.CommandManager;
 import com.ferusgrim.furrybot.plugin.Greeter;
 import com.ferusgrim.furrybot.plugin.Leaver;
@@ -52,6 +53,11 @@ public class FurryBot {
         final Leaver leaver = Leaver.configure(config.getNode("leaving"));
         if (leaver != null) {
             this.client.getDispatcher().registerListener(leaver);
+        }
+
+        final HereAttacker attacker = HereAttacker.configure(config.getNode("here-attacker"));
+        if (attacker != null) {
+            this.client.getDispatcher().registerListener(attacker);
         }
 
         final CommandManager commandManager = new CommandManager(this.client, config.getNode("commands"));
