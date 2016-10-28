@@ -38,6 +38,8 @@ public class CommandManager {
         this.commands.add(new Bouncer(this, this.client, this.rawConfig.getNode("bounce")));
         this.commands.add(new ChangeAvatar(this, this.client, this.getRawConfig().getNode("avatar")));
         this.commands.add(new Gif(this, this.client, this.getRawConfig().getNode("gif")));
+        this.commands.add(new AboutBot(this, this.client, this.getRawConfig().getNode("about")));
+        this.commands.add(new HelpMe(this, this.client, this.getRawConfig().getNode("help")));
     }
 
     public IDiscordClient getClient() {
@@ -64,11 +66,12 @@ public class CommandManager {
             return;
         }
 
-        final FurryCommand command = this.getCommand(args[0]);
+        final FurryCommand command = this.getCommand(args[0].substring(1));
 
         if (command == null) {
             return; // No command by the name
         }
+
         args = ParseUtil.removeFirstElement(args);
 
         final IChannel channel = event.getMessage().getChannel();
@@ -119,9 +122,9 @@ public class CommandManager {
         return builder.toString();
     }
 
-    private FurryCommand getCommand(final String cmd) {
+    FurryCommand getCommand(final String cmd) {
         for (final FurryCommand check : this.commands) {
-            if (check.getName().equalsIgnoreCase(cmd.substring(1))) {
+            if (check.getName().equalsIgnoreCase(cmd)) {
                 return check;
             }
         }
