@@ -41,7 +41,6 @@ public class HereAttacker {
         }
 
         if (this.safeChannels.contains(event.getMessage().getChannel().getID())) {
-            FurryBot.LOGGER.error("BLACKLISTED CHANNEL!");
             return;
         }
 
