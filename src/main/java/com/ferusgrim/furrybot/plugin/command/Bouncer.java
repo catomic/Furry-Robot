@@ -80,6 +80,12 @@ public class Bouncer extends FurryCommand {
                 continue;
             }
 
+            final IUser get = DiscordUtil.getUser(channel.getGuild(), mention.getId());
+
+            if (get == null) {
+                continue;
+            }
+
             mentioned.add(DiscordUtil.getUser(channel.getGuild(), mention.getId()));
         }
 
