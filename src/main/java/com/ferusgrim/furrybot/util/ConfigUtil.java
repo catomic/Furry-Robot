@@ -80,12 +80,14 @@ public final class ConfigUtil {
         return root;
     }
 
-    private static void createLocalFile(final Path file) {
-        try {
-            Files.createDirectories(file.getParent());
-            Files.createFile(file);
-        } catch (final IOException e) {
-            LOGGER.error("Failed to create configuration file: {}", file.toAbsolutePath().toString(), e);
+    public static void createLocalFile(final Path file) {
+        if (!Files.exists(file)) {
+            try {
+                Files.createDirectories(file.getParent());
+                Files.createFile(file);
+            } catch (final IOException e) {
+                LOGGER.error("Failed to create configuration file: {}", file.toAbsolutePath().toString(), e);
+            }
         }
     }
 
