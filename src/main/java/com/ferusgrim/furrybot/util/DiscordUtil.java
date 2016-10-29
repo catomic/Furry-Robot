@@ -24,9 +24,9 @@ public final class DiscordUtil {
     public static void sendMessage(final IChannel channel, final String message) {
         try {
             channel.sendMessage(message);
-        } catch (final MissingPermissionsException | RateLimitException | DiscordException e) {
+        } catch (final MissingPermissionsException | DiscordException e) {
             FurryBot.LOGGER.error("Failed to send message: {}", message, e);
-        }
+        } catch (RateLimitException ignored) {} // Let's not spam the console, please?
     }
 
     public static IChannel getChannel(final IGuild guild, final String channelId) {
