@@ -67,7 +67,15 @@ public class Boop extends FurryCommand {
 
         final IUser mentioned = DiscordUtil.getUser(channel.getGuild(), mention.getId());
 
-        return mentioned == null ? "Whoops! That's an invalid user!" : this.boopUser(channel, booper, mentioned);
+        if (mentioned == null) {
+            return "Whoops! That's an invalid user!";
+        }
+
+        if (mentioned == booper) {
+            return "You can't boop yourself!";
+        }
+
+        return this.boopUser(channel, booper, mentioned);
     }
 
     private String boopUser(final IChannel channel, final IUser booper, final IUser victim) {
