@@ -2,8 +2,6 @@ package com.ferusgrim.furrybot.util;
 
 import com.ferusgrim.furrybot.FurryBot;
 import com.google.common.collect.Lists;
-import sx.blah.discord.handle.impl.obj.Channel;
-import sx.blah.discord.handle.impl.obj.Guild;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IRole;

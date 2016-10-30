@@ -50,7 +50,7 @@ public class ChangeAvatar extends FurryCommand {
                 return "Ferus is lazy and has only added support for `.png` and `.jpg` images!";
             }
         } catch (DiscordException e) {
-            FurryBot.LOGGER.error("Encounted error while changing avatar!: {}", link, e);
+            FurryBot.LOGGER.error("Encountered error while changing avatar!: {}", link, e);
             return "Whoops! Something went wrong while changing my avatar!";
         } catch (RateLimitException e) {
             return "Looks like you tried to change me too often!";

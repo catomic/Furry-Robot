@@ -1,6 +1,5 @@
 package com.ferusgrim.furrybot.plugin.command;
 
-import com.ferusgrim.furrybot.FurryBot;
 import com.ferusgrim.furrybot.util.DiscordUtil;
 import com.ferusgrim.furrybot.util.ParseUtil;
 import com.google.common.collect.Lists;

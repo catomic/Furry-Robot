@@ -6,14 +6,12 @@ import com.ferusgrim.furrybot.util.DiscordUtil;
 import com.ferusgrim.furrybot.util.DiscordUtil.Mention;
 import com.ferusgrim.furrybot.util.SqLiteUtil;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import ninja.leaping.configurate.ConfigurationNode;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IUser;
 
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 public class Boop extends FurryCommand {

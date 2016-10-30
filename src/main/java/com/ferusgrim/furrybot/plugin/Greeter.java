@@ -3,17 +3,14 @@ package com.ferusgrim.furrybot.plugin;
 import com.ferusgrim.furrybot.FurryBot;
 import com.ferusgrim.furrybot.util.DiscordUtil;
 import com.ferusgrim.furrybot.util.ParseUtil;
-import javafx.concurrent.Task;
 import ninja.leaping.configurate.ConfigurationNode;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.UserJoinEvent;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IRole;
-import sx.blah.discord.handle.obj.IUser;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;

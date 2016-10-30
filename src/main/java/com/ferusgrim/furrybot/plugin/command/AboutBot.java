@@ -1,6 +1,5 @@
 package com.ferusgrim.furrybot.plugin.command;
 
-import com.ferusgrim.furrybot.util.DiscordUtil;
 import ninja.leaping.configurate.ConfigurationNode;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
