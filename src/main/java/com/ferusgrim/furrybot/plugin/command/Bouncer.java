@@ -55,7 +55,7 @@ public class Bouncer extends FurryCommand {
     @Override
     public String execute(final IChannel channel, final IUser user, String[] args) {
         final boolean ofAge;
-        if (args[0].equalsIgnoreCase("18+")) {
+        if (args[0].equals("18")) {
             ofAge = true;
             args = ParseUtil.removeFirstElement(args);
         } else {
