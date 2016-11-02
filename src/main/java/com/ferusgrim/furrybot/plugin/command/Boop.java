@@ -75,6 +75,10 @@ public class Boop extends FurryCommand {
             return "You can't boop yourself!";
         }
 
+        if (mentioned == this.getBot().getOurUser()) {
+            return "You can't boop me!";
+        }
+
         return this.boopUser(channel, booper, mentioned);
     }
 
