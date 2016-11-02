@@ -40,6 +40,7 @@ public class CommandManager {
         this.commands.add(new AboutBot(this, this.client, this.getRawConfig().getNode("about")));
         this.commands.add(new HelpMe(this, this.client, this.getRawConfig().getNode("help")));
         this.commands.add(new Boop(this, this.client, this.getRawConfig().getNode("boop")));
+        this.commands.add(new Img(this, this.client, this.getRawConfig().getNode("img")));
     }
 
     public IDiscordClient getClient() {

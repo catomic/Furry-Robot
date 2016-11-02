@@ -8,37 +8,33 @@ import ninja.leaping.configurate.ConfigurationNode;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IUser;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Gif extends FurryCommand {
+public class Img extends FurryCommand {
 
     private static final List<String> ACCEPTED_IMAGE_EXTENSIONS = Lists.newArrayList();
-
-    static {
-        ACCEPTED_IMAGE_EXTENSIONS.add(".gif");
-        ACCEPTED_IMAGE_EXTENSIONS.add(".gifv");
-    }
 
     private final String apiToken;
     private final String engineToken;
     private final List<String> sfwChannels;
     private final List<String> nsfwChannels;
 
-    public Gif(final CommandManager manager,
+    public Img(final CommandManager manager,
                final IDiscordClient bot,
                final ConfigurationNode rawConfig) {
         super(manager, bot, rawConfig);
 
         this.apiToken = rawConfig.getNode("api-token").getString("");
-        this.engineToken = rawConfig.getNode("engine-token").getString("");
+        this.engineToken = rawConfig.getNode("engine-token").getString();
 
         if (this.apiToken.isEmpty()) {
-            FurryBot.LOGGER.warn("\"gif.api-token\" isn't configured! Disabling 'Gif' command...");
+            FurryBot.LOGGER.warn("\"img.api-token\" isn't configured! Disabling 'Img' command...");
         }
 
         if (this.engineToken.isEmpty()) {
-            FurryBot.LOGGER.warn("\"gif.engine-token\" isn't configured! Disabling 'Gif' command...");
+            FurryBot.LOGGER.warn("\"img.engine-token\" isn't configured! Disabling 'Img' command...");
         }
 
         this.sfwChannels = ParseUtil.getList(rawConfig.getNode("sfw-channelId-whitelist"));
@@ -66,17 +62,17 @@ public class Gif extends FurryCommand {
 
     @Override
     public String getName() {
-        return "gif";
+        return "img";
     }
 
     @Override
     public String getDescription() {
-        return "Send me out into the wilderness to collect your gifs!";
+        return "I'll get your sexy (or tame) image for you!";
     }
 
     @Override
     public String getSyntax() {
-        return "gif <keyword> [keyword ... ]";
+        return "img <keyword> [keyword...]";
     }
 
     @Override
