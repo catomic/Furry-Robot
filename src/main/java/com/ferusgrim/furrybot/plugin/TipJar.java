@@ -3,13 +3,20 @@ package com.ferusgrim.furrybot.plugin;
 import com.ferusgrim.furrybot.FurryBot;
 import com.ferusgrim.furrybot.util.DiscordUtil;
 import com.ferusgrim.furrybot.util.SqLiteUtil;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import ninja.leaping.configurate.ConfigurationNode;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
+import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IUser;
 
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class TipJar {
 
@@ -58,6 +65,28 @@ public class TipJar {
 
     private static String replace(final String query, final String id, final String word) {
         return query.replace(VAR_CURSER, id).replace(VAR_CURSE, word);
+    }
+
+    public static LinkedHashMap<String, Double> compileLeaderboard(final IChannel channel) {
+        final List<String> ids = Lists.newArrayList();
+        SqLiteUtil.query(DATABASE_FILE, "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name", results -> {
+            while (results.next()) {
+                ids.add(results.getString(1));
+            }
+        });
+
+        final Map<String, Double> users = Maps.newHashMap();
+        for (final String id : ids) {
+            users.put(id, getValueOf(id));
+        }
+
+        return users.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+    }
+
+    public static void main(String[] args) {
+        compileLeaderboard(null);
     }
 
     public static double getValueOf(final String id) {
@@ -143,11 +172,15 @@ public class TipJar {
             this.variations = variations;
         }
 
-        public static Naughties of(final String word, final boolean fromDatabase) {
+        public static Naughties of(String word, final boolean fromDatabase) {
             for (final Naughties naughty : Naughties.values()) {
                 if (naughty == CLEAN) {
                     continue; // Don't ever check the "CLEAN" enum.
                 }
+
+                word = word
+                        .replaceAll("[^a-zA-Z]", "")
+                        .toLowerCase();
 
                 if (fromDatabase) {
                     if (naughty.main.equals(word)) {
@@ -158,25 +191,25 @@ public class TipJar {
                 }
 
                 if (naughty.strict) {
-                    if (word.toLowerCase().contains(naughty.main)) {
+                    if (word.contains(naughty.main)) {
                         return naughty; // Found a match.
                     }
 
                     continue; // This is a strict check, so we only care about 'main'
                 }
 
-                if (!word.toLowerCase().contains(naughty.main)) {
+                if (!word.contains(naughty.main)) {
                     continue; // This is NOT a strict check, and the word doesn't contain 'main'
                 }
 
-                if (word.toLowerCase().equals(naughty.main)) {
+                if (word.equals(naughty.main)) {
                     return naughty; // Found a match.
                 }
 
                 // This is NOT a strict check, and the word doesn't EQUAL 'main'.
 
                 for (final String variant : naughty.variations) {
-                    if (word.toLowerCase().contains(variant)) {
+                    if (word.contains(variant)) {
                         return naughty; // Found a match.
                     }
                 }
