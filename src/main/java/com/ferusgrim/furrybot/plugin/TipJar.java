@@ -9,7 +9,6 @@ import ninja.leaping.configurate.ConfigurationNode;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IUser;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -68,14 +67,8 @@ public class TipJar {
         return query.replace(VAR_CURSER, id).replace(VAR_CURSE, word);
     }
 
-    public static LinkedHashMap<String, Double> compileLeaderboard(final IChannel channel) {
-        final List<String> ids = Lists.newArrayList();
-        SqLiteUtil.query(DATABASE_FILE, QU_MASTER, results -> {
-            while (results.next()) {
-                ids.add(results.getString(1));
-            }
-        });
-
+    public static LinkedHashMap<String, Double> compileUserLeaderboard(final IChannel channel) {
+        final List<String> ids = getStoredIds();
         final Map<String, Double> users = Maps.newHashMap();
         for (final String id : ids) {
             users.put(id, getValueOf(id));
@@ -86,20 +79,54 @@ public class TipJar {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
 
-    public static void main(String[] args) {
-        compileLeaderboard(null);
+    public static LinkedHashMap<String, Integer> compileWordLeaderboard(final IChannel channel) {
+        final List<String> ids = getStoredIds();
+        final Map<String, Integer> counts = Maps.newHashMap();
+        for (final String id : ids) {
+            final Map<Naughties, Integer> user = getUser(id);
+
+            for (Map.Entry<Naughties, Integer> count : user.entrySet()) {
+                counts.put(count.getKey().main,
+                        counts.containsKey(count.getKey().main) ?
+                                counts.get(count.getKey().main) + count.getValue() :
+                                count.getValue());
+            }
+        }
+
+        return counts.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+    }
+
+    public static LinkedHashMap<String, Integer> compileWordUserLeaderboard(final String id) {
+        final Map<String, Integer> user = Maps.newHashMap();
+
+        for (Map.Entry<Naughties, Integer> entry : getUser(id).entrySet()) {
+            user.put(entry.getKey().main, entry.getValue());
+        }
+
+        return user.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
 
     public static double getValueOf(final String id) {
+        final Map<Naughties, Integer> useMap = getUser(id);
+
+        double value = 0.0;
+        for (final Map.Entry<Naughties, Integer> entry : useMap.entrySet()) {
+            value = value + (entry.getKey().worth * entry.getValue());
+        }
+
+        return value;
+    }
+
+    private static Map<Naughties, Integer> getUser(final String id) {
         final Map<Naughties, Integer> useMap = Maps.newHashMap();
 
         SqLiteUtil.execute(DATABASE_FILE, replace(EX_CREATE, id));
 
-        final String query = replace(QU_ALL, id);
-
         SqLiteUtil.query(DATABASE_FILE, replace(QU_ALL, id), results -> {
-            double temp = 0.0;
-
             while(results.next()) {
                 final Naughties naughty = Naughties.of(results.getString(COL_CURSE), true);
                 final int used = results.getInt(COL_USED);
@@ -108,12 +135,19 @@ public class TipJar {
             }
         });
 
-        double value = 0.0;
-        for (final Map.Entry<Naughties, Integer> entry : useMap.entrySet()) {
-            value = value + (entry.getKey().worth * entry.getValue());
-        }
+        return useMap;
+    }
 
-        return value;
+    private static List<String> getStoredIds() {
+        final List<String> ids = Lists.newArrayList();
+
+        SqLiteUtil.query(DATABASE_FILE, QU_MASTER, results -> {
+            while (results.next()) {
+                ids.add(results.getString(1));
+            }
+        });
+
+        return ids;
     }
 
     public static TipJar configure(final ConfigurationNode node) {

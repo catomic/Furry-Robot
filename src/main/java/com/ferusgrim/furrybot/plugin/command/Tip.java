@@ -43,7 +43,15 @@ public class Tip extends FurryCommand {
         }
 
         if (args[0].equalsIgnoreCase("top")) {
-            return this.topFive(channel);
+            if (args.length > 1 && args[1].equalsIgnoreCase("words")) {
+                return this.topWords(channel);
+            }
+
+            return this.topUsers(channel);
+        }
+
+        if (args[0].equalsIgnoreCase("words")) {
+            return this.topUserWords(user);
         }
 
         final DiscordUtil.Mention mention = DiscordUtil.getMention(args[0]);
@@ -62,7 +70,49 @@ public class Tip extends FurryCommand {
             return "I don't have any tips!";
         }
 
+        if (args.length > 1 && args[1].equalsIgnoreCase("words")) {
+            return this.topUserWords(mentioned);
+        }
+
         return this.forUser(mentioned);
+    }
+
+    private String topUserWords(final IUser mentioned) {
+        final LinkedHashMap<String, Integer> sorted = TipJar.compileWordUserLeaderboard(mentioned.getID());
+
+        int count = 1;
+        final StringBuilder builder = new StringBuilder("```Markdown\n#TipJar Word Leadboard (for ").append(mentioned.getName()).append(")\n");
+
+        for (Map.Entry<String, Integer> entry : sorted.entrySet()) {
+            builder.append(count).append(". ").append(entry.getKey()).append(" : ").append(entry.getValue()).append("\n");
+            count++;
+
+            if (count >= 6) {
+                break;
+            }
+        }
+
+        builder.append("```\n");
+        return builder.toString();
+    }
+
+    private String topWords(final IChannel channel) {
+        final LinkedHashMap<String, Integer> sorted = TipJar.compileWordLeaderboard(channel);
+
+        int count = 1;
+        final StringBuilder builder = new StringBuilder("```MarkDown\n#TipJar Word Leaderboards\n");
+
+        for (Map.Entry<String, Integer> entry : sorted.entrySet()) {
+            builder.append(count).append(". ").append(entry.getKey()).append(" : ").append(entry.getValue()).append("\n");
+            count++;
+
+            if (count >= 6) {
+                break;
+            }
+        }
+
+        builder.append("```\n");
+        return builder.toString();
     }
 
     private String forUser(final IUser mention) {
@@ -72,11 +122,11 @@ public class Tip extends FurryCommand {
                 "```\n";
     }
 
-    private String topFive(final IChannel channel) {
-        final LinkedHashMap<String, Double> sorted =  TipJar.compileLeaderboard(channel);
+    private String topUsers(final IChannel channel) {
+        final LinkedHashMap<String, Double> sorted =  TipJar.compileUserLeaderboard(channel);
 
         int count = 1;
-        final StringBuilder builder = new StringBuilder("```Markdown\n#TipJar Leaderboard\n");
+        final StringBuilder builder = new StringBuilder("```Markdown\n#TipJar User Leaderboards\n");
 
         for (Map.Entry<String, Double> entry : sorted.entrySet()) {
             final IUser leader = DiscordUtil.getUser(channel.getGuild(), entry.getKey());
