@@ -1,5 +1,6 @@
 package com.ferusgrim.furrybot;
 
+import com.ferusgrim.furrybot.plugin.TipJar;
 import com.ferusgrim.furrybot.plugin.command.CommandManager;
 import com.ferusgrim.furrybot.plugin.Greeter;
 import com.ferusgrim.furrybot.plugin.Leaver;
@@ -54,6 +55,11 @@ public class FurryBot {
             this.client.getDispatcher().registerListener(leaver);
         }
 
+        final TipJar tipJar = TipJar.configure(config.getNode("tipjar"));
+        if (tipJar != null) {
+            this.client.getDispatcher().registerListener(tipJar);
+        }
+        
         final CommandManager commandManager = new CommandManager(this.client, config.getNode("commands"));
         commandManager.registerCommands();
         this.client.getDispatcher().registerListener(commandManager);
