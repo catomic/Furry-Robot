@@ -9,7 +9,6 @@ import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 
 import java.nio.file.Path;
-import java.text.DecimalFormat;
 import java.util.Map;
 
 public class TipJar {
@@ -38,7 +37,7 @@ public class TipJar {
                 continue; // Ignore curse words in usernames.
             }
 
-            final Naughties naughty = Naughties.of(part);
+            final Naughties naughty = Naughties.of(part, false);
 
             if (naughty == Naughties.CLEAN) {
                 continue; // No results - clean.
@@ -72,7 +71,7 @@ public class TipJar {
             double temp = 0.0;
 
             while(results.next()) {
-                final Naughties naughty = Naughties.of(results.getString(COL_CURSE));
+                final Naughties naughty = Naughties.of(results.getString(COL_CURSE), true);
                 final int used = results.getInt(COL_USED);
 
                 useMap.put(naughty, used);
@@ -97,46 +96,81 @@ public class TipJar {
     }
 
     private enum Naughties {
-
-        CUNT(1.0, "cunt", "cunts"),
-        FUCK(.5, "fuck", "fucker", "fucks", "fucking"),
-        MFER(.5, "motherfucker", "motherfucking"),
-        FAG(.5, "fag", "faggot", "faggots"),
-        SHIT(.25, "shit", "shitty", "shits", "shitter", "shitting"),
-        BULL(.25, "bullshit"),
-        DICK(.1, "dick", "dicks", "dicking"),
-        TITS(.1, "tits"),
-        AHOLE(.1, "asshole", "assholes"),
-        COCK(.1, "cock", "cocks"),
-        ASS(.05, "ass", "asses"),
-        BITCH(.05, "bitch", "bitching", "bitcher"),
-        PISS(.05, "piss", "pisses", "pisser", "pissing"),
-        DAMN(.01, "damn", "damned", "goddamn", "goddamned"),
-        CLEAN(0, "clean")
+        CLEAN(0, false, null),
+        FUCK(.5, true, "fuck"),
+        SHIT(.25, true, "shit"),
+        BEPIS(.25, true, "bepis"),
+        BLOWJOB(.2, true, "blowjob"),
+        CUM(.2, false, "cum", "cumslut"),
+        RIMJOB(.2, true, "rimjob"),
+        WHORE(.15, true, "whore"),
+        SCHLONG(.1, true, "schlong"),
+        SKANK(.1, true, "skank"),
+        DICK(.1, true, "dick"),
+        PISS(.1, true, "piss"),
+        PUSSY(.1, true, "pussy"),
+        BITCH(.1, true, "bitch"),
+        SLUT(.1, true, "slut"),
+        HANDJOB(.1, true, "handjob"),
+        TITS(.1, true, "tits"),
+        TWAT(.1, true, "twat"),
+        WANK(.1, true, "wank"),
+        ARSE(.1, false, "arse", "arses", "areshole"),
+        ASS(.1, false, "ass", "asshat", "assbag", "dumbass", "assbite", "assclown", "asses", "asshole", "asslick", "asspirate", "asswipe"),
+        COCK(.1, false, "cock", "cockbite", "cockhead", "cocksucker"),
+        JERKOFF(.05, true, "jerkoff"),
+        DOUCHE(.05, true, "douche"),
+        CLIT(.05, true, "clit"),
+        BONER(.05, true, "boner"),
+        JIZZ(.05, true, "jizz"),
+        BASTARD(.05, true, "bastard"),
+        DILDO(.02, true, "dildo"),
+        BUTTPLUG(.02, true, "buttplug"),
+        CHODE(.02, true, "chode"),
+        DAMN(.01, true, "damn"),
+        HELL(.01, false, "hell")
         ;
 
         private final double worth;
+        private final boolean strict;
         private final String main;
         private final String[] variations;
 
-        Naughties(final double worth, final String main, final String... variations) {
+        Naughties(final double worth, final boolean strict, final String main, final String... variations) {
             this.worth = worth;
+            this.strict = strict;
             this.main = main;
             this.variations = variations;
         }
 
-        public static Naughties of(final String word) {
+        public static Naughties of(final String word, final boolean fromDatabase) {
             for (final Naughties naughty : Naughties.values()) {
                 if (naughty == CLEAN) {
                     continue;
                 }
 
-                if (naughty.main.equalsIgnoreCase(word)) {
-                    return naughty;
+                if (fromDatabase) {
+                    if (naughty.main.equals(word)) {
+                        return naughty;
+                    }
+
+                    continue;
                 }
 
-                for (final String variation : naughty.variations) {
-                    if (variation.equalsIgnoreCase(word)) {
+                if (naughty.strict) {
+                    if (word.toLowerCase().contains(naughty.main)) {
+                        return naughty;
+                    }
+
+                    continue;
+                }
+
+                if (!word.toLowerCase().contains(naughty.main)) {
+                    continue;
+                }
+
+                for (final String variant : naughty.variations) {
+                    if (word.toLowerCase().contains(variant)) {
                         return naughty;
                     }
                 }
