@@ -146,12 +146,12 @@ public class TipJar {
         public static Naughties of(final String word, final boolean fromDatabase) {
             for (final Naughties naughty : Naughties.values()) {
                 if (naughty == CLEAN) {
-                    continue;
+                    continue; // Don't ever check the "CLEAN" enum.
                 }
 
                 if (fromDatabase) {
                     if (naughty.main.equals(word)) {
-                        return naughty;
+                        return naughty; // Found a match.
                     }
 
                     continue;
@@ -159,21 +159,29 @@ public class TipJar {
 
                 if (naughty.strict) {
                     if (word.toLowerCase().contains(naughty.main)) {
-                        return naughty;
+                        return naughty; // Found a match.
                     }
 
-                    continue;
+                    continue; // This is a strict check, so we only care about 'main'
                 }
 
                 if (!word.toLowerCase().contains(naughty.main)) {
-                    continue;
+                    continue; // This is NOT a strict check, and the word doesn't contain 'main'
                 }
+
+                if (word.toLowerCase().equals(naughty.main)) {
+                    return naughty; // Found a match.
+                }
+
+                // This is NOT a strict check, and the word doesn't EQUAL 'main'.
 
                 for (final String variant : naughty.variations) {
                     if (word.toLowerCase().contains(variant)) {
-                        return naughty;
+                        return naughty; // Found a match.
                     }
                 }
+
+                // This is NOT a strict check, and the word doesn't EQUAL 'main' or CONTAIN 'variations'.
             }
 
             return CLEAN;
