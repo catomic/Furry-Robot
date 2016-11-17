@@ -32,6 +32,7 @@ public class TipJar {
     private static final String EX_INSERT = "INSERT OR IGNORE INTO `{curser}` VALUES('{curse}', 0)";
     private static final String EX_UPDATE = "UPDATE `{curser}` SET `used` = `used` + 1 WHERE `naughty_word` = '{curse}'";
     private static final String QU_ALL = "SELECT * FROM `{curser}`";
+    private static final String QU_MASTER = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name";
 
     private TipJar(){}
 
@@ -69,7 +70,7 @@ public class TipJar {
 
     public static LinkedHashMap<String, Double> compileLeaderboard(final IChannel channel) {
         final List<String> ids = Lists.newArrayList();
-        SqLiteUtil.query(DATABASE_FILE, "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name", results -> {
+        SqLiteUtil.query(DATABASE_FILE, QU_MASTER, results -> {
             while (results.next()) {
                 ids.add(results.getString(1));
             }
