@@ -126,6 +126,7 @@ public class TipJar {
 
     private enum Naughties {
         CLEAN(0, false, null),
+        CUNT(1, true, "cunt"),
         FUCK(.5, true, "fuck"),
         SHIT(.25, true, "shit"),
         BEPIS(.25, true, "bepis"),
