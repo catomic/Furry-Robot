@@ -37,6 +37,10 @@ public class TipJar {
 
     @EventSubscriber
     public void onUserMessage(final MessageReceivedEvent event) {
+        if (event.getMessage().getChannel().isPrivate()) {
+            return; // Don't allow PMs.
+        }
+
         final String[] parts = event.getMessage().getContent().split("\\s+");
 
         for (final String part : parts) {
