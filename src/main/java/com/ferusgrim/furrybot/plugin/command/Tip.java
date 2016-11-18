@@ -2,10 +2,11 @@ package com.ferusgrim.furrybot.plugin.command;
 
 import com.ferusgrim.furrybot.plugin.TipJar;
 import com.ferusgrim.furrybot.util.DiscordUtil;
-import com.ferusgrim.furrybot.util.SqLiteUtil;
+import com.ferusgrim.furrybot.util.ParseUtil;
 import ninja.leaping.configurate.ConfigurationNode;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IUser;
 
 import java.text.DecimalFormat;
@@ -18,10 +19,14 @@ public class Tip extends FurryCommand {
 
     private static final DecimalFormat DEC_FORMAT = new DecimalFormat("'$'0.00");
 
+    private final List<String> modRoles;
+
     public Tip(final CommandManager manager,
                final IDiscordClient bot,
                final ConfigurationNode rawConfig) {
         super(manager, bot, rawConfig);
+
+        this.modRoles = ParseUtil.getList(rawConfig.getNode("mod-roles"));
     }
 
     @Override
@@ -57,6 +62,10 @@ public class Tip extends FurryCommand {
             return this.topUserWords(user);
         }
 
+        if (args[0].equalsIgnoreCase("del")) {
+            return this.deleteUser(channel, user, ParseUtil.removeFirstElement(args));
+        }
+
         final DiscordUtil.Mention mention = DiscordUtil.getMention(args[0]);
 
         if (mention == null) {
@@ -80,15 +89,52 @@ public class Tip extends FurryCommand {
         return this.forUser(mentioned);
     }
 
+    private String deleteUser(final IChannel channel, final IUser user, final String[] args) {
+        boolean allow = false;
+        for (final IRole role : user.getRolesForGuild(channel.getGuild())) {
+            if (this.modRoles.contains(role.getID())) {
+                allow = true;
+            }
+        }
+
+        if (!allow) {
+            return ":interrobang: Looks like you don't have permission to do this!";
+        }
+
+        if (args.length < 1) {
+            return "You didn't specify anyone!";
+        }
+
+
+        final DiscordUtil.Mention mention = DiscordUtil.getMention(args[0]);
+
+        if (mention == null) {
+            return "Whoops! That's an invalid user!";
+        }
+
+        final IUser victim = DiscordUtil.getUser(channel.getGuild(), mention.getId());
+
+        TipJar.deleteUser(victim.getID());
+
+        final String grammar;
+        if (victim.getName().endsWith("'s") || victim.getName().endsWith("'")) {
+            grammar = "";
+        } else if (victim.getName().endsWith("s")) {
+            grammar = "'";
+        } else {
+            grammar = "'s";
+        }
+
+        return "Deleted " + victim.getName() + grammar + " acquired tips!";
+    }
+
     private String topUserWords(final IUser mentioned) {
         final LinkedHashMap<String, Integer> sorted = TipJar.compileWordUserLeaderboard(mentioned.getID());
 
-        int count = 1;
         final int maxLength = this.getHighestLength(sorted.keySet(), 6);
+        int count = 1;
 
         final StringBuilder builder = new StringBuilder("```Markdown\n#TipJar Word Leadboard (for ").append(mentioned.getName()).append(")\n");
-
-        count = 1;
 
         for (Map.Entry<String, Integer> entry : sorted.entrySet()) {
             builder.append(String.format("%s. %-" + maxLength + "s : %s\n", count, entry.getKey(), entry.getValue()));

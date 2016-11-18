@@ -30,6 +30,7 @@ public class TipJar {
     private static final String EX_CREATE = "CREATE TABLE IF NOT EXISTS `{curser}` (`naughty_word` STRING UNIQUE, `used` INTEGER)";
     private static final String EX_INSERT = "INSERT OR IGNORE INTO `{curser}` VALUES('{curse}', 0)";
     private static final String EX_UPDATE = "UPDATE `{curser}` SET `used` = `used` + 1 WHERE `naughty_word` = '{curse}'";
+    private static final String EX_DELETE = "DROP TABLE IF EXISTS `{curser}`";
     private static final String QU_ALL = "SELECT * FROM `{curser}`";
     private static final String QU_MASTER = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name";
 
@@ -61,14 +62,6 @@ public class TipJar {
                     replace(EX_INSERT, id, naughty.main),
                     replace(EX_UPDATE, id, naughty.main));
         }
-    }
-
-    private static String replace(final String query, final String id) {
-        return query.replace(VAR_CURSER, id);
-    }
-
-    private static String replace(final String query, final String id, final String word) {
-        return query.replace(VAR_CURSER, id).replace(VAR_CURSE, word);
     }
 
     public static LinkedHashMap<String, Double> compileUserLeaderboard(final IChannel channel) {
@@ -125,6 +118,10 @@ public class TipJar {
         return value;
     }
 
+    public static void deleteUser(final String id) {
+        SqLiteUtil.execute(DATABASE_FILE, replace(EX_DELETE, id));
+    }
+
     private static Map<Naughties, Integer> getUser(final String id) {
         final Map<Naughties, Integer> useMap = Maps.newHashMap();
 
@@ -152,6 +149,14 @@ public class TipJar {
         });
 
         return ids;
+    }
+
+    private static String replace(final String query, final String id) {
+        return query.replace(VAR_CURSER, id);
+    }
+
+    private static String replace(final String query, final String id, final String word) {
+        return query.replace(VAR_CURSER, id).replace(VAR_CURSE, word);
     }
 
     public static TipJar configure(final ConfigurationNode node) {
