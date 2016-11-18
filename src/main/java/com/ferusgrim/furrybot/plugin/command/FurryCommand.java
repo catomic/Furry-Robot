@@ -51,6 +51,10 @@ public abstract class FurryCommand {
         return ParseUtil.getList(this.getRawConfig().getNode("role-permissions"));
     }
 
+    public boolean allowsPrivate() {
+        return false;
+    }
+
     public abstract String getName();
 
     public abstract String getDescription();

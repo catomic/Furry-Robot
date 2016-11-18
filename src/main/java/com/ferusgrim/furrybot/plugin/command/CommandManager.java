@@ -74,6 +74,10 @@ public class CommandManager {
             return; // No command by the name
         }
 
+        if (event.getMessage().getChannel().isPrivate() && !command.allowsPrivate()) {
+            return; // Received message in private but command doesn't allow it.
+        }
+
         args = ParseUtil.removeFirstElement(args);
 
         final IChannel channel = event.getMessage().getChannel();
